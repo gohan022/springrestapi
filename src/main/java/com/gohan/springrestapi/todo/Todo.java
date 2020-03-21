@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.todo;
 
+import com.gohan.springrestapi.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -34,4 +35,8 @@ public class Todo {
     @LastModifiedDate
     private LocalDateTime updatedAt;
     private boolean isDone;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "work_by")
+    private User user;
 }

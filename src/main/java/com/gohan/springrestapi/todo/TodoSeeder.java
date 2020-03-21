@@ -1,16 +1,23 @@
 package com.gohan.springrestapi.todo;
 
 import com.github.javafaker.Faker;
+import com.gohan.springrestapi.user.User;
+import com.gohan.springrestapi.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-/*@Component*/
+import java.util.List;
+import java.util.Random;
+
+@Component
 @Order(2)
 public class TodoSeeder implements CommandLineRunner {
     @Autowired
     private TodoRepository todoRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -18,9 +25,15 @@ public class TodoSeeder implements CommandLineRunner {
 
         System.out.println("Todo Seeder....");
 
+        Random rand = new Random();
+        List<User> users = userRepository.findAll();
         for (int i = 0; i < 15; i++) {
+            User user = users.get(rand.nextInt(users.size()));
+
             String description = faker.lorem().sentence();
-            todoRepository.save(new Todo(description));
+            Todo todo = new Todo(description);
+            todo.setUser(user);
+            todoRepository.save(todo);
         }
     }
 }
