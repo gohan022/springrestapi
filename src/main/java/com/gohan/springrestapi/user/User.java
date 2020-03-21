@@ -28,22 +28,25 @@ public class User {
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
     @NotEmpty(message = "Please enter a first name.")
+    @Size(min = 4, max = 50)
     @NonNull
     @Column(nullable = false, length = 50)
     private String firstName;
     @NotEmpty(message = "Please enter a last name")
+    @Size(min = 4, max = 30)
     @NonNull
     @Column(length = 30)
     private String lastName;
     @NotEmpty(message = "Please enter a username.")
+    @Size(min = 4, max = 50)
     @NonNull
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 50)
     private String username;
     @NotEmpty(message = "Please enter a email.")
-    @Size(min = 4, max = 30)
+    @Size(min = 4, max = 80)
     @NonNull
     @Email
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 80)
     private String email;
     @NotEmpty(message = "Please enter a password.")
     @NonNull
