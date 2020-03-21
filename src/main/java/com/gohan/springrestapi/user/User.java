@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.user;
 
+import com.gohan.springrestapi.todo.Todo;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -11,7 +12,9 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -63,7 +66,7 @@ public class User {
     @Transient
     private String confirmPassword;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -71,6 +74,10 @@ public class User {
     )
     @Setter(AccessLevel.NONE)
     private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
+    @Setter(AccessLevel.NONE)
+    private List<Todo> todos = new ArrayList<>();
 
     public String getFullName() {
         return firstName + " " + lastName;
@@ -82,5 +89,13 @@ public class User {
 
     public void addRoles(Set<Role> roles) {
         roles.forEach(this::addRole);
+    }
+
+    public void addTodo(Todo todo) {
+        todos.add(todo);
+    }
+
+    public void addTodos(List<Todo> todos) {
+        todos.forEach(this::addTodo);
     }
 }
