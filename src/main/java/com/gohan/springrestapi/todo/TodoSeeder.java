@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Random;
 
-@Component
+/*@Component*/
 @Order(2)
 public class TodoSeeder implements CommandLineRunner {
     @Autowired

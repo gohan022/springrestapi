@@ -31,14 +31,14 @@ public class User {
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
     @NotEmpty(message = "Please enter a first name.")
-    @Size(min = 4, max = 50)
+    @Size(min = 3, max = 100)
     @NonNull
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String firstName;
     @NotEmpty(message = "Please enter a last name")
-    @Size(min = 4, max = 30)
+    @Size(min = 2, max = 60)
     @NonNull
-    @Column(length = 30)
+    @Column(length = 60)
     private String lastName;
     @NotEmpty(message = "Please enter a username.")
     @Size(min = 4, max = 50)
@@ -66,7 +66,7 @@ public class User {
     @Transient
     private String confirmPassword;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
