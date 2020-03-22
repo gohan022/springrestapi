@@ -10,6 +10,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -127,6 +129,7 @@ public class TodoRestController {
 
         Todo todoUpdated;
         try {
+            System.out.println(todo);
             todoPrevious.setDescription(todo.getDescription());
             todoPrevious.setTargetDate(todo.getTargetDate());
             todoPrevious.setDone(todo.isDone());

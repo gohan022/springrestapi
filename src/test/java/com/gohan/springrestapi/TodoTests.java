@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -30,7 +31,7 @@ public class TodoTests {
     void testCreateTodo() {
         User user = userService.save(new User("john", "doe", "test", "test@localhost.com", "test"));
 
-        Todo todo = new Todo(faker.lorem().sentence(2, 4), LocalDateTime.now());
+        Todo todo = new Todo(faker.lorem().sentence(2, 4), new Date());
         todo.setUser(user);
         todoService.save(todo);
     }

@@ -34,7 +34,7 @@ public class TodoSeeder implements CommandLineRunner {
             User user = users.get(rand.nextInt(users.size()));
 
             String description = faker.lorem().sentence();
-            Todo todo = new Todo(description, LocalDateTime.now());
+            Todo todo = new Todo(description, new Date());
             todo.setUser(user);
             todoRepository.save(todo);
         }

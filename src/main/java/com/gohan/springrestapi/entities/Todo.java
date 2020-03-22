@@ -9,7 +9,6 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -31,7 +30,7 @@ public class Todo {
     @NotNull(message = "Target date required!")
     @NonNull
     @Column(nullable = false)
-    private LocalDateTime targetDate;
+    private Date targetDate;
     private boolean isDone;
 
     @JsonIgnoreProperties(value={"todos", "hibernateLazyInitializer", "handler"}, allowSetters=true)
