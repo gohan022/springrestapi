@@ -1,7 +1,7 @@
 package com.gohan.springrestapi;
 
 import com.github.javafaker.Faker;
-import com.gohan.springrestapi.todo.Todo;
+import com.gohan.springrestapi.entities.Todo;
 import com.gohan.springrestapi.todo.TodoService;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

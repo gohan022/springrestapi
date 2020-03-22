@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.user;
 
+import com.gohan.springrestapi.entities.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

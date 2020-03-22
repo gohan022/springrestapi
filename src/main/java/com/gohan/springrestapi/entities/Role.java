@@ -1,18 +1,19 @@
-package com.gohan.springrestapi.user;
+package com.gohan.springrestapi.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Collection;
 
-@Entity
-@Table(name = "roles")
 @Getter
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
 @ToString
+@Entity
+@Table(name = "roles")
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -20,6 +21,7 @@ public class Role {
     private Long id;
     @NonNull
     private String name;
-    @ManyToMany(mappedBy = "roles")
+    @JsonIgnoreProperties({"roles", "hibernateLazyInitializer", "handler" })
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private Collection<User> users;
 }

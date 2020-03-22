@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.todo;
 
+import com.gohan.springrestapi.entities.Todo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

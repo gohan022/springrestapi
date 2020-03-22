@@ -1,12 +1,12 @@
 package com.gohan.springrestapi.todo;
 
+import com.gohan.springrestapi.entities.Todo;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;

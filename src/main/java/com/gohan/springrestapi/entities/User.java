@@ -1,31 +1,26 @@
-package com.gohan.springrestapi.user;
+package com.gohan.springrestapi.entities;
 
-import com.gohan.springrestapi.todo.Todo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @RequiredArgsConstructor
 @ToString
-public class User {
+@Entity
+@Table(name = "users")
+public class User extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
@@ -55,10 +50,6 @@ public class User {
     @NonNull
     @Column(nullable = false)
     private String password;
-    @CreatedDate
-    private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 
     @Transient
     @Setter(AccessLevel.NONE)
@@ -66,7 +57,8 @@ public class User {
     @Transient
     private String confirmPassword;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnoreProperties(value={"users", "hibernateLazyInitializer", "handler" })
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -75,6 +67,7 @@ public class User {
     @Setter(AccessLevel.NONE)
     private Set<Role> roles = new HashSet<>();
 
+    @JsonIgnoreProperties(value={"user", "hibernateLazyInitializer", "handler"}, allowSetters=true)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
     @Setter(AccessLevel.NONE)
     private List<Todo> todos = new ArrayList<>();

@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.user;
 
+import com.gohan.springrestapi.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
