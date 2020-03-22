@@ -9,6 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -32,7 +34,7 @@ public class TodoSeeder implements CommandLineRunner {
             User user = users.get(rand.nextInt(users.size()));
 
             String description = faker.lorem().sentence();
-            Todo todo = new Todo(description);
+            Todo todo = new Todo(description, LocalDateTime.now());
             todo.setUser(user);
             todoRepository.save(todo);
         }

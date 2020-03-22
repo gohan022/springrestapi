@@ -6,8 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,6 +71,11 @@ public class TodoRestController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        /*final URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                                .path("/{id}")
+                                .buildAndExpand(todoNew.getId())
+                                .toUri();*/
+
         response.put("message", "The Todo has been created successfully!");
         response.put("todo", todoNew);
 
@@ -121,6 +128,7 @@ public class TodoRestController {
         Todo todoUpdated;
         try {
             todoPrevious.setDescription(todo.getDescription());
+            todoPrevious.setTargetDate(todo.getTargetDate());
             todoPrevious.setDone(todo.isDone());
 
             todoUpdated = todoService.save(todoPrevious);

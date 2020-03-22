@@ -8,6 +8,9 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -16,7 +19,7 @@ import javax.validation.constraints.NotEmpty;
 @ToString
 @Entity
 @Table(name = "todos")
-public class Todo extends Auditable {
+public class Todo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
@@ -25,6 +28,10 @@ public class Todo extends Auditable {
     @NonNull
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
+    @NotNull(message = "Target date required!")
+    @NonNull
+    @Column(nullable = false)
+    private LocalDateTime targetDate;
     private boolean isDone;
 
     @JsonIgnoreProperties(value={"todos", "hibernateLazyInitializer", "handler"}, allowSetters=true)

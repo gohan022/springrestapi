@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDateTime;
+
 @SpringBootTest
 @ActiveProfiles("test")
 public class TodoTests {
@@ -28,7 +30,7 @@ public class TodoTests {
     void testCreateTodo() {
         User user = userService.save(new User("john", "doe", "test", "test@localhost.com", "test"));
 
-        Todo todo = new Todo(faker.lorem().sentence(2, 4));
+        Todo todo = new Todo(faker.lorem().sentence(2, 4), LocalDateTime.now());
         todo.setUser(user);
         todoService.save(todo);
     }
