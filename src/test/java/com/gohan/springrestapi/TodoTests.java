@@ -2,7 +2,9 @@ package com.gohan.springrestapi;
 
 import com.github.javafaker.Faker;
 import com.gohan.springrestapi.entities.Todo;
+import com.gohan.springrestapi.entities.User;
 import com.gohan.springrestapi.todo.TodoService;
+import com.gohan.springrestapi.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,12 +19,17 @@ public class TodoTests {
 
     @Autowired
     private TodoService todoService;
+    @Autowired
+    private UserService userService;
 
     private Faker faker = new Faker();
 
     @Test
     void testCreateTodo() {
+        User user = userService.save(new User("john", "doe", "test", "test@localhost.com", "test"));
+
         Todo todo = new Todo(faker.lorem().sentence(2, 4));
+        todo.setUser(user);
         todoService.save(todo);
     }
 

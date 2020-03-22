@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 public class TodoRestController {
     private final TodoService todoService;
