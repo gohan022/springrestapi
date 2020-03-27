@@ -1,4 +1,4 @@
-package com.gohan.springrestapi.config;
+package com.gohan.springrestapi.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
