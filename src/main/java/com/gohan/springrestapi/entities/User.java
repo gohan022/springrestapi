@@ -1,6 +1,6 @@
 package com.gohan.springrestapi.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -20,6 +20,9 @@ import java.util.Set;
 @ToString
 @Entity
 @Table(name = "users")
+/*@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")*/
 public class User extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -55,6 +58,7 @@ public class User extends Auditable {
     @Setter(AccessLevel.NONE)
     private String fullName;
     @Transient
+    @JsonIgnore
     private String confirmPassword;
 
     @JsonIgnoreProperties(value={"users", "hibernateLazyInitializer", "handler" })
@@ -67,9 +71,11 @@ public class User extends Auditable {
     @Setter(AccessLevel.NONE)
     private Set<Role> roles = new HashSet<>();
 
-    @JsonIgnoreProperties(value={"user", "hibernateLazyInitializer", "handler"}, allowSetters=true)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
     @Setter(AccessLevel.NONE)
+    //@JsonIgnoreProperties(value={"user", "hibernateLazyInitializer", "handler"}, allowSetters=true)
+    //@JsonBackReference
+    @JsonIgnore
     private List<Todo> todos = new ArrayList<>();
 
     public String getFullName() {

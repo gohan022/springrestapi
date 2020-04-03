@@ -30,7 +30,7 @@ public class TodoSeeder implements CommandLineRunner {
 
         Random rand = new Random();
         List<User> users = userRepository.findAll();
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 40; i++) {
             User user = users.get(rand.nextInt(users.size()));
 
             String description = faker.lorem().sentence();

@@ -2,17 +2,18 @@ package com.gohan.springrestapi.todo;
 
 import com.gohan.springrestapi.entities.Todo;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -25,8 +26,9 @@ public class TodoRestController {
     }
 
     @GetMapping("/users/todos")
-    public List<Todo> index() {
-        return todoService.findAll();
+    public Page<Todo> index(@RequestParam(required = false, defaultValue = "0") int page,
+                            @RequestParam(required = false, defaultValue = "15") int size) {
+        return todoService.findAll(PageRequest.of(page, size));
     }
 
     @GetMapping("/users/todos/{id}")

@@ -1,6 +1,6 @@
 package com.gohan.springrestapi.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
@@ -18,6 +18,9 @@ import java.util.Date;
 @ToString
 @Entity
 @Table(name = "todos")
+/*@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")*/
 public class Todo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -29,13 +32,24 @@ public class Todo {
     private String description;
     @NotNull(message = "Target date required!")
     @NonNull
+    // @Temporal(TemporalType.DATE) // To store only date
     @Column(nullable = false)
+    //@JsonFormat(pattern = "yyyy-mm-dd")
     private Date targetDate;
     private boolean isDone;
 
-    @JsonIgnoreProperties(value={"todos", "hibernateLazyInitializer", "handler"}, allowSetters=true)
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "work_by", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+    @JoinColumn(name = "work_by", updatable = false, nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
+    //@JsonIgnoreProperties(value={"todos", "hibernateLazyInitializer", "handler"}, allowSetters=true)
+    //@JsonManagedReference
+    @JsonIgnore
     private User user;
+
+    /*
+    @PrePersist
+    private void onCreate(){}
+    @PreUpdate
+    private void onUpdate(){}
+    */
 }

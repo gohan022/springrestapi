@@ -1,6 +1,8 @@
 package com.gohan.springrestapi.todo;
 
 import com.gohan.springrestapi.entities.Todo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,8 +17,8 @@ public class TodoService {
     }
 
     @Transactional(readOnly = true)
-    public List<Todo> findAll() {
-        return todoRepository.findAll();
+    public Page<Todo> findAll(Pageable pageable) {
+        return todoRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
