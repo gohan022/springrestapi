@@ -3,15 +3,15 @@ package com.gohan.springrestapi.entities;
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -23,7 +23,7 @@ import java.util.Set;
 /*@JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")*/
-public class User extends Auditable {
+public class User extends Auditable implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
@@ -53,6 +53,8 @@ public class User extends Auditable {
     @NonNull
     @Column(nullable = false)
     private String password;
+    @Column(nullable = false)
+    private boolean enabled;
 
     @Transient
     @Setter(AccessLevel.NONE)
@@ -61,34 +63,16 @@ public class User extends Auditable {
     @JsonIgnore
     private String confirmPassword;
 
-    @JsonIgnoreProperties(value={"users", "hibernateLazyInitializer", "handler" })
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
-    )
-    @Setter(AccessLevel.NONE)
-    private Set<Role> roles = new HashSet<>();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private Role role;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
+   /* @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
     @Setter(AccessLevel.NONE)
     //@JsonIgnoreProperties(value={"user", "hibernateLazyInitializer", "handler"}, allowSetters=true)
     //@JsonBackReference
     @JsonIgnore
     private List<Todo> todos = new ArrayList<>();
-
-    public String getFullName() {
-        return firstName + " " + lastName;
-    }
-
-    public void addRole(Role role) {
-        roles.add(role);
-    }
-
-    public void addRoles(Set<Role> roles) {
-        roles.forEach(this::addRole);
-    }
 
     public void addTodo(Todo todo) {
         todos.add(todo);
@@ -96,5 +80,37 @@ public class User extends Auditable {
 
     public void addTodos(List<Todo> todos) {
         todos.forEach(this::addTodo);
+    }*/
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        /*List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(role.name()));
+        return authorities;*/
+        return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 }

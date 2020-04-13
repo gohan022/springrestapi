@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:4200")
+// @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 public class TodoRestController {
     private final TodoService todoService;
@@ -25,13 +25,13 @@ public class TodoRestController {
         this.todoService = todoService;
     }
 
-    @GetMapping("/users/todos")
+    @GetMapping("/user/todos")
     public Page<Todo> index(@RequestParam(required = false, defaultValue = "0") int page,
                             @RequestParam(required = false, defaultValue = "15") int size) {
         return todoService.findAll(PageRequest.of(page, size));
     }
 
-    @GetMapping("/users/todos/{id}")
+    @GetMapping("/user/todos/{id}")
     public ResponseEntity<?> show(@PathVariable long id) {
         Map<String, Object> response = new HashMap<>();
         Todo todo;
@@ -52,8 +52,8 @@ public class TodoRestController {
         return new ResponseEntity<Todo>(todo, HttpStatus.OK);
     }
 
-    @PostMapping("/users/todos")
-    public ResponseEntity<?> create(@Valid @RequestBody Todo todo, BindingResult bindingResult) {
+    @PostMapping("/user/todos")
+    public ResponseEntity<?> create(@RequestBody Todo todo, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
         Todo todoNew;
 
@@ -68,7 +68,7 @@ public class TodoRestController {
         }
 
         try {
-            todoNew = todoService.save(todo);
+            todoNew = todoService.save(new Todo(todo.getDescription(), todo.getTargetDate()));
         } catch (DataAccessException e) {
             response.put("message", "Failed to insert into database!");
             response.put("error", Objects.requireNonNull(e.getMessage()).concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -86,7 +86,7 @@ public class TodoRestController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/users/todos/{id}")
+    @PutMapping("/user/todos/{id}")
     public ResponseEntity<?> update(@Valid @RequestBody Todo todo, BindingResult bindingResult, @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 
@@ -149,7 +149,7 @@ public class TodoRestController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/users/todos/{id}")
+    @DeleteMapping("/user/todos/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 

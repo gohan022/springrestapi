@@ -1,9 +1,16 @@
 package com.gohan.springrestapi.user;
 
+import com.gohan.springrestapi.entities.Role;
 import com.gohan.springrestapi.entities.User;
+import com.gohan.springrestapi.security.jwt.JwtTokenUtil;
+import com.gohan.springrestapi.security.jwt.resource.JwtAuthenticateRequest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +29,12 @@ public class UserRestController {
         this.userService = userService;
     }
 
-    @GetMapping("/users")
+    @GetMapping("/admin/users")
     public List<User> index() {
         return userService.findAll();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/admin/users/{id}")
     public ResponseEntity<?> show(@PathVariable long id) {
         Map<String, Object> response = new HashMap<>();
         User user;
@@ -48,7 +55,7 @@ public class UserRestController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping("/users")
+    @PostMapping("/admin/users")
     public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
         User newUser;
@@ -64,6 +71,7 @@ public class UserRestController {
         }
 
         try {
+            user.setRole(Role.USER);
             newUser = userService.save(user);
         } catch (DataAccessException e) {
             response.put("message", "Failed to insert into database!");
@@ -77,11 +85,11 @@ public class UserRestController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/users/{id}")
+    @PutMapping("/admin/users/{id}")
     public ResponseEntity<?> update(@Valid @RequestBody User user, BindingResult bindingResult, @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
-        
         User prevUser;
+
         try {
             prevUser = userService.findById(id);
         } catch (DataAccessException e) {
@@ -123,7 +131,7 @@ public class UserRestController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/admin/users/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
 
@@ -146,4 +154,36 @@ public class UserRestController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult bindingResult) {
+        Map<String, Object> response = new HashMap<>();
+        User newUser;
+
+        if(bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getAllErrors()
+                    .stream()
+                    .map(err -> "Field "+ err.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            response.put("errors", errors);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            user.setRole(Role.USER);
+            user.setEnabled(true);
+            newUser = userService.save(user);
+        } catch (DataAccessException e) {
+            response.put("message", "Failed to insert into database!");
+            response.put("error", Objects.requireNonNull(e.getMessage()).concat(": ").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        response.put("message", "Registration successfully!");
+        response.put("user", newUser);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }

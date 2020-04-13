@@ -6,26 +6,24 @@ import com.gohan.springrestapi.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /*@Component*/
 @Order(1)
 public class UserSeeder implements CommandLineRunner {
     @Autowired
-    private  UserRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private BCryptPasswordEncoder encoder;
+    private PasswordEncoder encoder;
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Role Seeder....");
+        /*System.out.println("Role Seeder....");
         Role adminRole = new Role("ROLE_ADMIN");
         roleRepository.save(adminRole);
         Role userRole = new Role("ROLE_USER");
-        roleRepository.save(userRole);
+        roleRepository.save(userRole);*/
 
         System.out.println("User Seeder....");
         String adminPassword = encoder.encode("admin");
@@ -33,11 +31,15 @@ public class UserSeeder implements CommandLineRunner {
 
         // Admin
         User admin = new User("Soumen", "Das", "admin", "admin@localhost.com", adminPassword);
-        admin.addRole(adminRole);
+        admin.setRole(Role.ADMIN);
+        admin.setEnabled(true);
+        // admin.addRole(adminRole);
         userRepository.save(admin);
         // User
         User user = new User("John", "Doe", "gohan022", "gohan044@gmail.com", userPassword);
-        user.addRole(userRole);
+        user.setRole(Role.USER);
+        user.setEnabled(true);
+        // user.addRole(userRole);
         userRepository.save(user);
 
         // Other Users
@@ -58,7 +60,8 @@ public class UserSeeder implements CommandLineRunner {
             }
 
             User newUser = new User(firstName, lastName, username, email, userPassword);
-            newUser.addRole(userRole);
+            newUser.setRole(Role.USER);
+            newUser.setEnabled(true);
 
             userRepository.save(newUser);
         }
