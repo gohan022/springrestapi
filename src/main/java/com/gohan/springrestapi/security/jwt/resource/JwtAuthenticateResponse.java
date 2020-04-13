@@ -7,7 +7,7 @@ public class JwtAuthenticateResponse {
     private String token;
 
     public JwtAuthenticateResponse(String token) {
-        this.token = token;
+        this.token = "Bearer " + token;
     }
 
     public String getToken() {

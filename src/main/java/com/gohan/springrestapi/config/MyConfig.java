@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.config;
 
+import com.gohan.springrestapi.security.jwt.JwtTokenUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
