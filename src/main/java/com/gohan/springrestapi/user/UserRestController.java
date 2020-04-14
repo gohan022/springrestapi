@@ -2,15 +2,9 @@ package com.gohan.springrestapi.user;
 
 import com.gohan.springrestapi.entities.Role;
 import com.gohan.springrestapi.entities.User;
-import com.gohan.springrestapi.security.jwt.JwtTokenUtil;
-import com.gohan.springrestapi.security.jwt.resource.JwtAuthenticateRequest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 

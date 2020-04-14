@@ -1,10 +1,7 @@
 package com.gohan.springrestapi.security;
 
-import com.gohan.springrestapi.security.jwt.JwtAuthenticationEntryPoint;
-import com.gohan.springrestapi.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -16,9 +13,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
@@ -29,31 +30,45 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 )
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsServiceImpl userDetailsService;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private static final String[] CSRF_IGNORE = {"/auth/**"};
+    private static final String[] AUTH_IGNORE = {"/register", "/auth/**", "/error", "/actuator/**"};
+    private static final String[] ROLE_USER_MATCHER = {"/user/**"};
+    private static final String[] ROLE_ADMIN_MATCHER = {"/admin/**"};
 
-    public SecurityConfiguration(UserDetailsServiceImpl userDetailsService,
-                                 JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    private final CustomUserDetailsService userDetailsService;
+    private final TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint;
+    private final JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter;
+
+    public SecurityConfiguration(CustomUserDetailsService userDetailsService, TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint, JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter) {
         this.userDetailsService = userDetailsService;
-        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.tokenAuthenticationEntryPoint = tokenAuthenticationEntryPoint;
+        this.jwtTokenAuthenticationFilter = jwtTokenAuthenticationFilter;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and()
-                .authorizeRequests()
-                .antMatchers("/register", "/authenticate", "/error", "/actuator/**").permitAll()
-                .antMatchers("/user/**").hasAuthority("USER")
-                .antMatchers("/admin/**").hasAuthority("ADMIN")
-                .anyRequest().authenticated()
-                .and().logout().permitAll().logoutRequestMatcher(new AntPathRequestMatcher("/api/user/logout", "POST"))
-                .and().exceptionHandling().authenticationEntryPoint(this.jwtAuthenticationEntryPoint)
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and().csrf().disable();
+        http.cors()
+                .and().exceptionHandling().authenticationEntryPoint(tokenAuthenticationEntryPoint)
+                .and().formLogin().disable().httpBasic().disable();
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.csrf()
+                .ignoringAntMatchers(CSRF_IGNORE)
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .and()
+                .addFilterAfter(new CustomCsrfFilter(), CsrfFilter.class);
+
+        http.authorizeRequests()
+                .antMatchers(AUTH_IGNORE).permitAll()
+                .antMatchers(ROLE_USER_MATCHER).hasAuthority("USER")
+                .antMatchers(ROLE_ADMIN_MATCHER).hasAuthority("ADMIN")
+                .anyRequest().authenticated()
+                .and().logout().permitAll().logoutRequestMatcher(new AntPathRequestMatcher("/api/user/logout", "POST"));
+
+        http.sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().addFilterBefore(jwtTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+         http.headers().xssProtection();
     }
 
     @Override
@@ -62,7 +77,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoderBean(){
+    public PasswordEncoder passwordEncoderBean() {
         return new BCryptPasswordEncoder();
     }
 
@@ -73,11 +88,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public WebMvcConfigurer corsConfigurer(){
+    public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("http://localhost:4200").allowedMethods("*");
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:4200")
+                        .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), OPTIONS.name())
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
+                        .maxAge(3600);
             }
         };
     }
