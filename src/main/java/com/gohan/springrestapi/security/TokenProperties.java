@@ -18,12 +18,12 @@ public class TokenProperties {
     private String uri;
     @NotBlank
     private String refreshUri;
-    private Jwt jwt;
-    private Cookie cookie;
+    private final Jwt jwt = new Jwt();
+    private final Cookie cookie = new Cookie();
 
     @Getter
     @Setter
-    private static final class Jwt {
+    public static class Jwt {
         @NotBlank
         private String tokenSecret;
         @NotBlank
@@ -34,11 +34,12 @@ public class TokenProperties {
 
     @Getter
     @Setter
-    private static final class Cookie {
+    public static class Cookie {
         @NotBlank
         private String accessTokenCookieName;
         @NotBlank
         private String refreshTokenCookieName;
         private boolean secure;
+        private String domain;
     }
 }

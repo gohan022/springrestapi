@@ -38,11 +38,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final CustomUserDetailsService userDetailsService;
     private final TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint;
     private final JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter;
+    private final CustomCsrfFilter customCsrfFilter;
 
-    public SecurityConfiguration(CustomUserDetailsService userDetailsService, TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint, JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter) {
+    public SecurityConfiguration(CustomUserDetailsService userDetailsService, TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint,
+                                 JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter, CustomCsrfFilter customCsrfFilter) {
         this.userDetailsService = userDetailsService;
         this.tokenAuthenticationEntryPoint = tokenAuthenticationEntryPoint;
         this.jwtTokenAuthenticationFilter = jwtTokenAuthenticationFilter;
+        this.customCsrfFilter = customCsrfFilter;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .ignoringAntMatchers(CSRF_IGNORE)
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
-                .addFilterAfter(new CustomCsrfFilter(), CsrfFilter.class);
+                .addFilterAfter(customCsrfFilter, CsrfFilter.class);
 
         http.authorizeRequests()
                 .antMatchers(AUTH_IGNORE).permitAll()
@@ -67,6 +70,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().addFilterBefore(jwtTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        /*http.requiresChannel()
+            .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
+            .requiresSecure();*/
 
          http.headers().xssProtection();
     }

@@ -2,6 +2,7 @@ package com.gohan.springrestapi.security;
 
 import com.gohan.springrestapi.security.util.SecurityCipherUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +17,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 
 @Component
 public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
@@ -31,9 +31,12 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService userDetailsService;
 
-    public JwtTokenAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService userDetailsService) {
+    private final AccountStatusUserDetailsChecker accountStatusChecker;
+
+    public JwtTokenAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService userDetailsService, AccountStatusUserDetailsChecker accountStatusChecker) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
+        this.accountStatusChecker = accountStatusChecker;
     }
 
     @Override
@@ -46,18 +49,16 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
                 String username = jwtTokenProvider.getUsernameFromToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                // accountStatusUserDetailsChecker.check(userDetails);
+                accountStatusChecker.check(userDetails);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
-            ex.printStackTrace();
-        }/* catch (AccountStatusException e) {
-            SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        }*/
+            //ex.printStackTrace();
+            //response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        }
 
         filterChain.doFilter(request, response);
     }

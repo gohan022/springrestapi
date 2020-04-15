@@ -100,6 +100,7 @@ public class AuthenticationController {
 
             LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Auth successful. Tokens are created in cookie.");
             return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
+
         } catch (DisabledException e) {
             System.out.println(e);
             throw new TokenAuthenticationException("USER_DISABLED", e);

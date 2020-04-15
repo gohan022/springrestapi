@@ -16,6 +16,9 @@ public class CookieUtil {
     @Value("${api-auth.cookie.secure}")
     private boolean secure;
 
+    @Value("${api-auth.cookie.domain:#{null}}")
+    private String domain;
+
     public HttpCookie createAccessTokenCookie(String token, Long duration) {
         String encryptedToken = SecurityCipherUtil.encrypt(token);
         return ResponseCookie.from(accessTokenCookieName, encryptedToken)
@@ -23,6 +26,7 @@ public class CookieUtil {
                 .httpOnly(true)
                 .secure(secure)
                 .sameSite("Strict") // protect against csrf attacks on modern browser
+                .domain(domain)
                 .path("/")
                 .build();
     }
@@ -34,6 +38,7 @@ public class CookieUtil {
                 .httpOnly(true)
                 .secure(secure)
                 .sameSite("Strict")
+                .domain(domain)
                 .path("/")
                 .build();
     }
