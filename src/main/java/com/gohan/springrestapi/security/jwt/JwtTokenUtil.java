@@ -1,7 +1,7 @@
-package com.gohan.springrestapi.security;
+package com.gohan.springrestapi.security.jwt;
 
 import com.gohan.springrestapi.security.dto.Token;
-import com.gohan.springrestapi.security.dto.TokenUser;
+import com.gohan.springrestapi.security.dto.TokenUserDetails;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.function.Function;
 
 @Component
-public class JwtTokenProvider {
+public class JwtTokenUtil {
 
     @Value("${api-auth.jwt.token-secret}")
     private String tokenSecret;
@@ -23,7 +23,7 @@ public class JwtTokenProvider {
     @Value("${api-auth.jwt.refresh-token-expiration-in-ms}")
     private Long refreshTokenExpirationInMs;
 
-    public Token generateAccessToken(TokenUser user) {
+    public Token generateAccessToken(TokenUserDetails user) {
         Claims claims = Jwts.claims().setSubject(user.getUsername());
 
         claims.put("auth", user.getAuthorities());
@@ -41,7 +41,7 @@ public class JwtTokenProvider {
         return new Token(Token.TokenType.ACCESS, token, duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
-    public Token generateRefreshToken(TokenUser user) {
+    public Token generateRefreshToken(TokenUserDetails user) {
         Claims claims = Jwts.claims().setSubject(user.getUsername());
 
         claims.put("auth", user.getAuthorities());

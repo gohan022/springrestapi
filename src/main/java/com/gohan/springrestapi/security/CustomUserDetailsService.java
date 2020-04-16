@@ -1,7 +1,7 @@
 package com.gohan.springrestapi.security;
 
 import com.gohan.springrestapi.entities.User;
-import com.gohan.springrestapi.security.dto.TokenUser;
+import com.gohan.springrestapi.security.dto.TokenUserDetails;
 import com.gohan.springrestapi.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,13 +20,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findByUsername(username);
         if(!user.isPresent()) {
             throw new UsernameNotFoundException("No user found by name: " + username);
         }
 
-        return new TokenUser(user.get());
+        return new TokenUserDetails(user.get());
     }
 
     @Transactional
@@ -36,6 +37,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found");
         }
 
-        return new TokenUser(user.get());
+        return new TokenUserDetails(user.get());
     }
 }

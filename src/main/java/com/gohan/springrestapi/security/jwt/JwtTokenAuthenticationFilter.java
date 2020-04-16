@@ -1,5 +1,6 @@
-package com.gohan.springrestapi.security;
+package com.gohan.springrestapi.security.jwt;
 
+import com.gohan.springrestapi.security.CustomUserDetailsService;
 import com.gohan.springrestapi.security.util.SecurityCipherUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
@@ -27,14 +28,14 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     @Value("${api-auth.cookie.refresh-token-cookie-name}")
     private String refreshTokenCookieName;
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenUtil jwtTokenUtil;
 
     private final CustomUserDetailsService userDetailsService;
 
     private final AccountStatusUserDetailsChecker accountStatusChecker;
 
-    public JwtTokenAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService userDetailsService, AccountStatusUserDetailsChecker accountStatusChecker) {
-        this.jwtTokenProvider = jwtTokenProvider;
+    public JwtTokenAuthenticationFilter(JwtTokenUtil jwtTokenUtil, CustomUserDetailsService userDetailsService, AccountStatusUserDetailsChecker accountStatusChecker) {
+        this.jwtTokenUtil = jwtTokenUtil;
         this.userDetailsService = userDetailsService;
         this.accountStatusChecker = accountStatusChecker;
     }
@@ -45,14 +46,17 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtToken(request, true);
-            // System.out.println("jwt");
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
-                String username = jwtTokenProvider.getUsernameFromToken(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                accountStatusChecker.check(userDetails);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (StringUtils.hasText(jwt)) {
+                if (jwtTokenUtil.validateToken(jwt)) {
+                    String username = jwtTokenUtil.getUsernameFromToken(jwt);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    accountStatusChecker.check(userDetails);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    response.addHeader("Message", "Invalid Token");
+                }
             }
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();

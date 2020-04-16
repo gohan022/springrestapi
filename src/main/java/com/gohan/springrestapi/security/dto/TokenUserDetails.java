@@ -8,10 +8,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-public class TokenUser implements UserDetails {
+public class TokenUserDetails implements UserDetails {
     private final User user;
 
-    public TokenUser(User user) {
+    public TokenUserDetails(User user) {
         this.user = user;
     }
 

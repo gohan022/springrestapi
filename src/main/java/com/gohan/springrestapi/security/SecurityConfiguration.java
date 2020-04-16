@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.security;
 
+import com.gohan.springrestapi.security.jwt.JwtTokenAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -104,6 +105,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), OPTIONS.name())
                         .allowedHeaders("*")
                         .allowCredentials(true)
+                       // .exposedHeaders("Message")
                         .maxAge(3600);
             }
         };
