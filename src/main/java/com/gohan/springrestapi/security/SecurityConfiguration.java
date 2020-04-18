@@ -105,7 +105,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), OPTIONS.name())
                         .allowedHeaders("*")
                         .allowCredentials(true)
-                       // .exposedHeaders("Message")
+                       // .exposedHeaders("X-AUTHENTICATION")
                         .maxAge(3600);
             }
         };

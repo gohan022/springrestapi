@@ -1,8 +1,12 @@
 package com.gohan.springrestapi.security.jwt;
 
 import com.gohan.springrestapi.security.CustomUserDetailsService;
+import com.gohan.springrestapi.security.dto.Token;
+import com.gohan.springrestapi.security.dto.TokenUserDetails;
+import com.gohan.springrestapi.security.util.CookieUtil;
 import com.gohan.springrestapi.security.util.SecurityCipherUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,12 +34,15 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
 
+    private final CookieUtil cookieUtil;
+
     private final CustomUserDetailsService userDetailsService;
 
     private final AccountStatusUserDetailsChecker accountStatusChecker;
 
-    public JwtTokenAuthenticationFilter(JwtTokenUtil jwtTokenUtil, CustomUserDetailsService userDetailsService, AccountStatusUserDetailsChecker accountStatusChecker) {
+    public JwtTokenAuthenticationFilter(JwtTokenUtil jwtTokenUtil, CookieUtil cookieUtil, CustomUserDetailsService userDetailsService, AccountStatusUserDetailsChecker accountStatusChecker) {
         this.jwtTokenUtil = jwtTokenUtil;
+        this.cookieUtil = cookieUtil;
         this.userDetailsService = userDetailsService;
         this.accountStatusChecker = accountStatusChecker;
     }
@@ -45,18 +52,25 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String jwt = getJwtToken(request, true);
+            String jwt = getJwtFromCookie(request);
             if (StringUtils.hasText(jwt)) {
                 if (jwtTokenUtil.validateToken(jwt)) {
+                    //System.out.println("Authentication Filter");
                     String username = jwtTokenUtil.getUsernameFromToken(jwt);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     accountStatusChecker.check(userDetails);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    // Renew Access Token
+                    Token newAccessToken = jwtTokenUtil.generateAccessToken((TokenUserDetails) userDetails);
+                    response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(newAccessToken.getTokenValue(), newAccessToken.getDuration()).toString());
                 } else {
-                    response.addHeader("Message", "Invalid Token");
+                    SecurityContextHolder.clearContext();
                 }
+            } else {
+                SecurityContextHolder.clearContext();
             }
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
@@ -65,15 +79,6 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private String getJwtFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ") && bearerToken.length() > 7) {
-            String accessToken = bearerToken.substring(7);
-            return SecurityCipherUtil.decrypt(accessToken);
-        }
-        return null;
     }
 
     private String getJwtFromCookie(HttpServletRequest request) {
@@ -88,11 +93,5 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         return null;
-    }
-
-    private String getJwtToken(HttpServletRequest request, boolean fromCookie) {
-        if (fromCookie) return getJwtFromCookie(request);
-
-        return getJwtFromRequest(request);
     }
 }

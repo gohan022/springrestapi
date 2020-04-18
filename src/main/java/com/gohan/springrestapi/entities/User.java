@@ -13,11 +13,10 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
+@EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
-@ToString
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 /*@JsonIdentityInfo(

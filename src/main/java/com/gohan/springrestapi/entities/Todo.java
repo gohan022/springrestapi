@@ -11,11 +11,9 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @RequiredArgsConstructor
-@ToString
+@NoArgsConstructor
 @Entity
 @Table(name = "todos")
 /*@JsonIdentityInfo(
