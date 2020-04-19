@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -66,7 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(ROLE_USER_MATCHER).hasAuthority("USER")
                 .antMatchers(ROLE_ADMIN_MATCHER).hasAuthority("ADMIN")
                 .anyRequest().authenticated()
-                .and().logout().permitAll().logoutRequestMatcher(new AntPathRequestMatcher("/api/user/logout", "POST"));
+                .and().logout().permitAll();
 
         http.sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -105,7 +104,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         .allowedMethods(GET.name(), POST.name(), PUT.name(), DELETE.name(), OPTIONS.name())
                         .allowedHeaders("*")
                         .allowCredentials(true)
-                       // .exposedHeaders("X-AUTHENTICATION")
+                        .exposedHeaders("X-AUTHENTICATION")
                         .maxAge(3600);
             }
         };

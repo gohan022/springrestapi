@@ -1,5 +1,6 @@
 package com.gohan.springrestapi.security;
 
+import com.gohan.springrestapi.entities.Session;
 import com.gohan.springrestapi.security.dto.LoginRequest;
 import com.gohan.springrestapi.security.dto.LoginResponse;
 import com.gohan.springrestapi.security.dto.Token;
@@ -7,6 +8,7 @@ import com.gohan.springrestapi.security.dto.TokenUserDetails;
 import com.gohan.springrestapi.security.jwt.JwtTokenUtil;
 import com.gohan.springrestapi.security.util.CookieUtil;
 import com.gohan.springrestapi.security.util.SecurityCipherUtil;
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -16,11 +18,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 @RestController
@@ -32,12 +37,16 @@ public class AuthenticationController {
     private final CookieUtil cookieUtil;
     private final CustomUserDetailsService userDetailsService;
     private final JwtTokenUtil jwtTokenUtil;
+    private final SessionService sessionService;
 
-    public AuthenticationController(AuthenticationManager authenticationManager, CookieUtil cookieUtil, CustomUserDetailsService userDetailsService, JwtTokenUtil jwtTokenUtil) {
+    public AuthenticationController(AuthenticationManager authenticationManager,
+                                    CookieUtil cookieUtil, CustomUserDetailsService userDetailsService,
+                                    JwtTokenUtil jwtTokenUtil, SessionService sessionService) {
         this.authenticationManager = authenticationManager;
         this.cookieUtil = cookieUtil;
         this.userDetailsService = userDetailsService;
         this.jwtTokenUtil = jwtTokenUtil;
+        this.sessionService = sessionService;
     }
 
     @Transactional
@@ -45,7 +54,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> login(
             @CookieValue(name = "${api-auth.cookie.access-token-cookie-name}", required = false) String accessToken,
             @CookieValue(name = "${api-auth.cookie.refresh-token-cookie-name}", required = false) String refreshToken,
-            @Valid @RequestBody LoginRequest loginRequest
+            @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request
     ) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -57,7 +66,7 @@ public class AuthenticationController {
             Boolean refreshTokenValid = jwtTokenUtil.validateToken(SecurityCipherUtil.decrypt(refreshToken));
 
             HttpHeaders responseHeaders = new HttpHeaders();
-            Token newAccessToken;
+            Token newAccessToken = null;
             Token newRefreshToken;
 
             if ((!accessTokenValid && !refreshTokenValid) || (accessTokenValid && refreshTokenValid)) {
@@ -72,9 +81,8 @@ public class AuthenticationController {
                 addAccessTokenCookie(responseHeaders, newAccessToken);
             }
 
-            if (accessTokenValid && !refreshTokenValid) {
-                newRefreshToken = jwtTokenUtil.generateRefreshToken(user);
-                addRefreshTokenCookie(responseHeaders, newRefreshToken);
+            if (newAccessToken != null) {
+                this.sessionService.updateSession(request, newAccessToken.getTokenValue(), user.getUser());
             }
 
             LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Auth successful. Tokens are created in cookie.");
@@ -84,7 +92,7 @@ public class AuthenticationController {
             throw new TokenAuthenticationException("USER_DISABLED", e);
         } catch (TokenAuthenticationException e) {
             throw new TokenAuthenticationException(e.getMessage());
-        } catch (AuthenticationException e) {
+        } catch (Exception e) {
             logger.warn("Authentication Exception: " + e.getMessage());
             throw new TokenAuthenticationException("INVALID_CREDENTIALS", e);
         }
@@ -92,7 +100,9 @@ public class AuthenticationController {
 
     @Transactional
     @PostMapping("${api-auth.refresh-uri}")
-    public ResponseEntity<LoginResponse> refreshToken(@CookieValue(name = "${api-auth.cookie.refresh-token-cookie-name}", required = false) String refreshToken, Authentication authentication) {
+    public ResponseEntity<LoginResponse> refreshToken(
+            @CookieValue(name = "${api-auth.cookie.refresh-token-cookie-name}", required = false) String refreshToken,
+            Authentication authentication, HttpServletRequest request) {
         try {
             refreshToken = SecurityCipherUtil.decrypt(refreshToken);
 
@@ -116,6 +126,8 @@ public class AuthenticationController {
             HttpHeaders responseHeaders = new HttpHeaders();
             addAccessTokenCookie(responseHeaders, newAccessToken);
 
+            this.sessionService.updateSession(request, newAccessToken.getTokenValue(), user.getUser());
+
             LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Auth successful. Tokens are created in cookie.");
             return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
 
@@ -123,16 +135,26 @@ public class AuthenticationController {
             throw new TokenAuthenticationException("USER_DISABLED", e);
         } catch (TokenAuthenticationException e) {
             throw new TokenAuthenticationException(e.getMessage());
-        } catch (AuthenticationException e) {
+        } catch (Exception e) {
             logger.warn("Authentication Exception: " + e.getMessage());
             throw new TokenAuthenticationException("INVALID_CREDENTIALS", e);
         }
     }
 
-  /*  @GetMapping("/logout")
-    public ResponseEntity<String> logOut(HttpServletRequest request, HttpServletResponse response){
+    @Transactional
+    @PostMapping("${api-auth.destroy-uri}")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        HttpSession session = request.getSession(false);
+        session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            this.sessionService.clearSession(request, ((TokenUserDetails) authentication.getPrincipal()).getUser());
+        }
+
         if (request.getCookies() != null) {
-            System.out.println("i found some cookies");
             for (Cookie cookie : request.getCookies()) {
                 cookie.setMaxAge(0);
                 cookie.setValue("");
@@ -143,8 +165,9 @@ public class AuthenticationController {
         }
 
         SecurityContextHolder.clearContext();
-        return new ResponseEntity (new ApiResponseMessage(true, userService.logout(request, response)), HttpStatus.OK);
-    }*/
+
+        return new ResponseEntity<>(new Gson().toJson("LOGOUT_SUCCESS"), HttpStatus.OK);
+    }
 
     @ExceptionHandler(TokenAuthenticationException.class)
     public ResponseEntity<LoginResponse> handleAuthenticationException(TokenAuthenticationException e) {

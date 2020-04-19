@@ -1,6 +1,7 @@
 package com.gohan.springrestapi.security.jwt;
 
 import com.gohan.springrestapi.security.CustomUserDetailsService;
+import com.gohan.springrestapi.security.SessionService;
 import com.gohan.springrestapi.security.dto.Token;
 import com.gohan.springrestapi.security.dto.TokenUserDetails;
 import com.gohan.springrestapi.security.util.CookieUtil;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -22,6 +24,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
@@ -32,6 +35,8 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     @Value("${api-auth.cookie.refresh-token-cookie-name}")
     private String refreshTokenCookieName;
 
+    private static final String[] NEW_TOKEN_IGNORE = {"/auth/**", "/register"};
+
     private final JwtTokenUtil jwtTokenUtil;
 
     private final CookieUtil cookieUtil;
@@ -40,11 +45,17 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final AccountStatusUserDetailsChecker accountStatusChecker;
 
-    public JwtTokenAuthenticationFilter(JwtTokenUtil jwtTokenUtil, CookieUtil cookieUtil, CustomUserDetailsService userDetailsService, AccountStatusUserDetailsChecker accountStatusChecker) {
+    private final SessionService sessionService;
+
+    public JwtTokenAuthenticationFilter(JwtTokenUtil jwtTokenUtil, CookieUtil cookieUtil,
+                                        CustomUserDetailsService userDetailsService,
+                                        AccountStatusUserDetailsChecker accountStatusChecker,
+                                        SessionService sessionService) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.cookieUtil = cookieUtil;
         this.userDetailsService = userDetailsService;
         this.accountStatusChecker = accountStatusChecker;
+        this.sessionService = sessionService;
     }
 
     @Override
@@ -64,8 +75,15 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                     // Renew Access Token
-                    Token newAccessToken = jwtTokenUtil.generateAccessToken((TokenUserDetails) userDetails);
-                    response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(newAccessToken.getTokenValue(), newAccessToken.getDuration()).toString());
+                    if(Arrays.stream(NEW_TOKEN_IGNORE).noneMatch(e -> new AntPathMatcher().match(e, request.getRequestURI()))) {
+                        Token newAccessToken = jwtTokenUtil.generateAccessToken((TokenUserDetails) userDetails);
+                        if(this.sessionService.isValid(request, jwt, newAccessToken.getTokenValue(), ((TokenUserDetails) userDetails).getUser())) {
+                            response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(newAccessToken.getTokenValue(), newAccessToken.getDuration()).toString());
+                        } else {
+                            response.addHeader("X-AUTHENTICATION", "INVALID_SESSION");
+                            throw new Exception("INVALID_SESSION");
+                        }
+                    }
                 } else {
                     SecurityContextHolder.clearContext();
                 }
@@ -74,8 +92,6 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
-            //ex.printStackTrace();
-            //response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         }
 
         filterChain.doFilter(request, response);

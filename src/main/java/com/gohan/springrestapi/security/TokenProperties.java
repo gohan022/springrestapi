@@ -18,6 +18,8 @@ public class TokenProperties {
     private String uri;
     @NotBlank
     private String refreshUri;
+    @NotBlank
+    private String destroyUri;
     private final Jwt jwt = new Jwt();
     private final Cookie cookie = new Cookie();
 

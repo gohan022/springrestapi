@@ -12,9 +12,11 @@ import java.io.IOException;
 @Component
 public class TokenAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
+    public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException e) throws IOException, ServletException {
-        httpServletResponse.addHeader("X-AUTHENTICATION", "TOKEN_EXPIRED");
-        httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED");
+        if (response.getHeader("X-AUTHENTICATION") == null) {
+            response.addHeader("X-AUTHENTICATION", "TOKEN_EXPIRED");
+        }
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED");
     }
 }
