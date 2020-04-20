@@ -82,7 +82,7 @@ public class AuthenticationController {
             }
 
             if (newAccessToken != null) {
-                this.sessionService.updateSession(request, newAccessToken.getTokenValue(), user.getUser());
+                this.sessionService.updatePayload(request, newAccessToken.getTokenValue(), user.getUser());
             }
 
             LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Auth successful. Tokens are created in cookie.");
@@ -126,7 +126,7 @@ public class AuthenticationController {
             HttpHeaders responseHeaders = new HttpHeaders();
             addAccessTokenCookie(responseHeaders, newAccessToken);
 
-            this.sessionService.updateSession(request, newAccessToken.getTokenValue(), user.getUser());
+            this.sessionService.updatePayload(request, newAccessToken.getTokenValue(), user.getUser());
 
             LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Auth successful. Tokens are created in cookie.");
             return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);

@@ -29,7 +29,7 @@ public class SessionService {
         return false;
     }
 
-    public void updateSession(HttpServletRequest request, String newAccessToken, User user) {
+    public void updatePayload(HttpServletRequest request, String newAccessToken, User user) {
         final String ipAddress = request.getRemoteAddr();
         Session session = this.sessionRepository.findByIpAddressAndUser(ipAddress, user).orElse(null);
 

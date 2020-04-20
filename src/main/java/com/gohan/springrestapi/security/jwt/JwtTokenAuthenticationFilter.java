@@ -64,17 +64,19 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromCookie(request);
+            UsernamePasswordAuthenticationToken authentication = null;
+
             if (StringUtils.hasText(jwt)) {
                 if (jwtTokenUtil.validateToken(jwt)) {
                     //System.out.println("Authentication Filter");
                     String username = jwtTokenUtil.getUsernameFromToken(jwt);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     accountStatusChecker.check(userDetails);
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    // Renew Access Token
+                    // Renew Access Token & update DB session if previous access token is present otherwise throw error
                     if(Arrays.stream(NEW_TOKEN_IGNORE).noneMatch(e -> new AntPathMatcher().match(e, request.getRequestURI()))) {
                         Token newAccessToken = jwtTokenUtil.generateAccessToken((TokenUserDetails) userDetails);
                         if(this.sessionService.isValid(request, jwt, newAccessToken.getTokenValue(), ((TokenUserDetails) userDetails).getUser())) {
@@ -84,10 +86,10 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
                             throw new Exception("INVALID_SESSION");
                         }
                     }
-                } else {
-                    SecurityContextHolder.clearContext();
                 }
-            } else {
+            }
+
+            if(authentication == null) {
                 SecurityContextHolder.clearContext();
             }
         } catch (Exception ex) {
