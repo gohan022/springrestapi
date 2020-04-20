@@ -1,13 +1,11 @@
 package com.gohan.springrestapi.security;
 
-import com.gohan.springrestapi.entities.Session;
 import com.gohan.springrestapi.security.dto.LoginRequest;
 import com.gohan.springrestapi.security.dto.LoginResponse;
 import com.gohan.springrestapi.security.dto.Token;
 import com.gohan.springrestapi.security.dto.TokenUserDetails;
 import com.gohan.springrestapi.security.jwt.JwtTokenUtil;
 import com.gohan.springrestapi.security.util.CookieUtil;
-import com.gohan.springrestapi.security.util.SecurityCipherUtil;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @RestController
 public class AuthenticationController {
@@ -52,8 +52,6 @@ public class AuthenticationController {
     @Transactional
     @PostMapping("${api-auth.uri}")
     public ResponseEntity<LoginResponse> login(
-            @CookieValue(name = "${api-auth.cookie.access-token-cookie-name}", required = false) String accessToken,
-            @CookieValue(name = "${api-auth.cookie.refresh-token-cookie-name}", required = false) String refreshToken,
             @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request
     ) {
         try {
@@ -62,28 +60,22 @@ public class AuthenticationController {
 
             final TokenUserDetails user = (TokenUserDetails) authentication.getPrincipal();
 
-            Boolean accessTokenValid = jwtTokenUtil.validateToken(SecurityCipherUtil.decrypt(accessToken));
-            Boolean refreshTokenValid = jwtTokenUtil.validateToken(SecurityCipherUtil.decrypt(refreshToken));
-
             HttpHeaders responseHeaders = new HttpHeaders();
-            Token newAccessToken = null;
+            Token newAccessToken;
             Token newRefreshToken;
 
-            if ((!accessTokenValid && !refreshTokenValid) || (accessTokenValid && refreshTokenValid)) {
-                newAccessToken = jwtTokenUtil.generateAccessToken(user);
+            newAccessToken = jwtTokenUtil.generateAccessToken(user);
+            addAccessTokenCookie(responseHeaders, newAccessToken);
+
+            if (loginRequest.isRememberMe()) {
                 newRefreshToken = jwtTokenUtil.generateRefreshToken(user);
-                addAccessTokenCookie(responseHeaders, newAccessToken);
+                addRefreshTokenCookie(responseHeaders, newRefreshToken);
+            } else {
+                newRefreshToken = new Token(Token.TokenType.REFRESH, "", 0L, LocalDateTime.now());
                 addRefreshTokenCookie(responseHeaders, newRefreshToken);
             }
 
-            if (!accessTokenValid && refreshTokenValid) {
-                newAccessToken = jwtTokenUtil.generateAccessToken(user);
-                addAccessTokenCookie(responseHeaders, newAccessToken);
-            }
-
-            if (newAccessToken != null) {
-                this.sessionService.updatePayload(request, newAccessToken.getTokenValue(), user.getUser());
-            }
+            this.sessionService.updatePayload(request, newAccessToken.getTokenValue(), user.getUser());
 
             LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Auth successful. Tokens are created in cookie.");
             return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
@@ -104,7 +96,6 @@ public class AuthenticationController {
             @CookieValue(name = "${api-auth.cookie.refresh-token-cookie-name}", required = false) String refreshToken,
             Authentication authentication, HttpServletRequest request) {
         try {
-            refreshToken = SecurityCipherUtil.decrypt(refreshToken);
 
             boolean refreshTokenValid = jwtTokenUtil.validateToken(refreshToken);
             if (!refreshTokenValid) {

@@ -5,7 +5,6 @@ import com.gohan.springrestapi.security.SessionService;
 import com.gohan.springrestapi.security.dto.Token;
 import com.gohan.springrestapi.security.dto.TokenUserDetails;
 import com.gohan.springrestapi.security.util.CookieUtil;
-import com.gohan.springrestapi.security.util.SecurityCipherUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
@@ -104,10 +103,7 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
         if (cookies == null) return null;
         for (Cookie cookie : cookies) {
             if (accessTokenCookieName.equals(cookie.getName())) {
-                String accessToken = cookie.getValue();
-                if (accessToken == null) return null;
-
-                return SecurityCipherUtil.decrypt(accessToken);
+                return cookie.getValue();
             }
         }
         return null;

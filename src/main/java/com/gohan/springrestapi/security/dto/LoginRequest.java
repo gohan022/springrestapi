@@ -13,4 +13,6 @@ public class LoginRequest {
 
     @NotEmpty(message = "Please enter a password.")
     private String password;
+
+    private boolean rememberMe;
 }

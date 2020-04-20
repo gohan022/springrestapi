@@ -2,7 +2,6 @@ package com.gohan.springrestapi.security.jwt;
 
 import com.gohan.springrestapi.security.dto.Token;
 import com.gohan.springrestapi.security.dto.TokenUserDetails;
-import com.gohan.springrestapi.security.util.SecurityCipherUtil;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
