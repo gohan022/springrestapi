@@ -35,12 +35,12 @@ public class SessionService {
 
         if(session != null) {
             session.setPayload(newAccessToken);
-            this.sessionRepository.save(session);
         } else {
             final String userAgent = request.getHeader("User-Agent");
-            Session newSession = new Session(ipAddress, userAgent, newAccessToken, user);
-            this.sessionRepository.save(newSession);
+            session = new Session(ipAddress, userAgent, newAccessToken, user);
         }
+
+        this.sessionRepository.save(session);
     }
 
     public void clearSession(HttpServletRequest request, User user) {

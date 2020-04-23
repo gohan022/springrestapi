@@ -1,6 +1,7 @@
 package com.gohan.springrestapi.todo;
 
 import com.gohan.springrestapi.entities.Todo;
+import com.gohan.springrestapi.exceptions.MapValidationErrorService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +21,11 @@ import java.util.stream.Collectors;
 @RestController
 public class TodoRestController {
     private final TodoService todoService;
+    private final MapValidationErrorService mapValidationErrorService;
 
-    public TodoRestController(TodoService todoService) {
+    public TodoRestController(TodoService todoService, MapValidationErrorService mapValidationErrorService) {
         this.todoService = todoService;
+        this.mapValidationErrorService = mapValidationErrorService;
     }
 
     @GetMapping("/user/todos")
@@ -56,6 +59,8 @@ public class TodoRestController {
     public ResponseEntity<?> create(@RequestBody Todo todo, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
         Todo todoNew;
+
+        ResponseEntity<?> errorMap = mapValidationErrorService.MapValidationService(bindingResult);
 
         if(bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()
