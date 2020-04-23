@@ -1,7 +1,7 @@
 package com.gohan.springrestapi.security;
 
-import com.gohan.springrestapi.entities.Session;
-import com.gohan.springrestapi.entities.User;
+import com.gohan.springrestapi.entities.user.Session;
+import com.gohan.springrestapi.entities.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

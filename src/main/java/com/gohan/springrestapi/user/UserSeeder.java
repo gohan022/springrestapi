@@ -1,13 +1,12 @@
 package com.gohan.springrestapi.user;
 
 import com.github.javafaker.Faker;
-import com.gohan.springrestapi.entities.Role;
-import com.gohan.springrestapi.entities.User;
+import com.gohan.springrestapi.entities.user.Role;
+import com.gohan.springrestapi.entities.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
 /*@Component*/
 @Order(1)

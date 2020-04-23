@@ -1,8 +1,8 @@
 package com.gohan.springrestapi;
 
 import com.github.javafaker.Faker;
-import com.gohan.springrestapi.entities.Todo;
-import com.gohan.springrestapi.entities.User;
+import com.gohan.springrestapi.entities.todo.Todo;
+import com.gohan.springrestapi.entities.user.User;
 import com.gohan.springrestapi.todo.TodoService;
 import com.gohan.springrestapi.user.UserService;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @SpringBootTest

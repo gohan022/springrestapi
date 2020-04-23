@@ -1,6 +1,6 @@
 package com.gohan.springrestapi.todo;
 
-import com.gohan.springrestapi.entities.Todo;
+import com.gohan.springrestapi.entities.todo.Todo;
 import com.gohan.springrestapi.exceptions.MapValidationErrorService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;

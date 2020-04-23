@@ -1,5 +1,6 @@
-package com.gohan.springrestapi.entities;
+package com.gohan.springrestapi.entities.user;
 
+import com.gohan.springrestapi.entities.Auditable;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;

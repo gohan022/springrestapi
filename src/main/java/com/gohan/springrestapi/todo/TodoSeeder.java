@@ -1,15 +1,13 @@
 package com.gohan.springrestapi.todo;
 
 import com.github.javafaker.Faker;
-import com.gohan.springrestapi.entities.Todo;
-import com.gohan.springrestapi.entities.User;
+import com.gohan.springrestapi.entities.todo.Todo;
+import com.gohan.springrestapi.entities.user.User;
 import com.gohan.springrestapi.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;

@@ -1,7 +1,7 @@
 package com.gohan.springrestapi;
 
 import com.github.javafaker.Faker;
-import com.gohan.springrestapi.entities.User;
+import com.gohan.springrestapi.entities.user.User;
 import com.gohan.springrestapi.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
