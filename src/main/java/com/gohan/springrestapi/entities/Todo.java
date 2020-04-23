@@ -1,7 +1,6 @@
-package com.gohan.springrestapi.entities.todo;
+package com.gohan.springrestapi.entities;
 
 import com.fasterxml.jackson.annotation.*;
-import com.gohan.springrestapi.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;

@@ -1,6 +1,6 @@
 package com.gohan.springrestapi.security.dto;
 
-import com.gohan.springrestapi.entities.user.User;
+import com.gohan.springrestapi.entities.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

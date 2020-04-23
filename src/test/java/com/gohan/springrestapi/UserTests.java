@@ -1,7 +1,7 @@
 package com.gohan.springrestapi;
 
 import com.github.javafaker.Faker;
-import com.gohan.springrestapi.entities.user.User;
+import com.gohan.springrestapi.entities.User;
 import com.gohan.springrestapi.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 //import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +22,7 @@ public class UserTests {
     @Autowired
     private UserService userService;
     @Autowired
-    private BCryptPasswordEncoder encoder;
+    private PasswordEncoder passwordEncoder;
 
     private Faker faker = new Faker();
 
@@ -31,7 +32,7 @@ public class UserTests {
         String lastName = faker.name().lastName();
         String username = "gohan";
         String email = faker.internet().emailAddress();
-        String password = encoder.encode("password");
+        String password = passwordEncoder.encode("password");
 
         User user = new User(firstName, lastName, username, email, password);
         userService.save(user);

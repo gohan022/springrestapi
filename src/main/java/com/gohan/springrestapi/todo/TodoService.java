@@ -1,6 +1,6 @@
 package com.gohan.springrestapi.todo;
 
-import com.gohan.springrestapi.entities.todo.Todo;
+import com.gohan.springrestapi.entities.Todo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

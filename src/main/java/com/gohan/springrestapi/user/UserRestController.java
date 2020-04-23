@@ -1,7 +1,7 @@
 package com.gohan.springrestapi.user;
 
-import com.gohan.springrestapi.entities.user.Role;
-import com.gohan.springrestapi.entities.user.User;
+import com.gohan.springrestapi.entities.Role;
+import com.gohan.springrestapi.entities.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

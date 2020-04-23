@@ -1,7 +1,6 @@
-package com.gohan.springrestapi.entities.user;
+package com.gohan.springrestapi.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gohan.springrestapi.entities.Auditable;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
