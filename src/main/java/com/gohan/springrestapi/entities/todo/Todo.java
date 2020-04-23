@@ -25,16 +25,19 @@ public class Todo {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
+
     @NotEmpty(message = "it cant be empty")
     @NonNull
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
+
     @NotNull(message = "Target date required!")
     @NonNull
     // @Temporal(TemporalType.DATE) // To store only date
     @Column(nullable = false)
     //@JsonFormat(pattern = "yyyy-mm-dd")
     private Date targetDate;
+
     private boolean isDone;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)

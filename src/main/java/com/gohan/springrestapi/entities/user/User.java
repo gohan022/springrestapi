@@ -24,37 +24,44 @@ public class User extends Auditable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
+
     @NotEmpty(message = "Please enter a first name.")
     @Size(min = 3, max = 100)
     @NonNull
     @Column(nullable = false, length = 100)
     private String firstName;
+
     @NotEmpty(message = "Please enter a last name")
     @Size(min = 2, max = 60)
     @NonNull
     @Column(length = 60)
     private String lastName;
+
     @NotEmpty(message = "Please enter a username.")
     @Size(min = 4, max = 50)
     @NonNull
     @Column(nullable = false, length = 50)
     private String username;
+
     @NotEmpty(message = "Please enter a email.")
     @Size(min = 4, max = 80)
     @NonNull
     @Email
     @Column(nullable = false, unique = true, length = 80)
     private String email;
+
     @NotEmpty(message = "Please enter a password.")
     @NonNull
     @Column(nullable = false)
     private String password;
+
     @Column(nullable = false)
     private boolean enabled;
 
     @Transient
     @Setter(AccessLevel.NONE)
     private String fullName;
+
     @Transient
     @JsonIgnore
     private String confirmPassword;

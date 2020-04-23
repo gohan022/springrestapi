@@ -19,12 +19,15 @@ public class Session extends Auditable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
+
     @Column(length = 60, nullable = false)
     @NonNull
     private String ipAddress;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     @NonNull
     private String userAgent;
+
     @Column(columnDefinition = "TEXT")
     @NonNull
     private String payload;
