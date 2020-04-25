@@ -44,7 +44,7 @@ public class Todo {
     @OnDelete(action = OnDeleteAction.CASCADE)
     //@JsonIgnoreProperties(value={"todos", "hibernateLazyInitializer", "handler"}, allowSetters=true)
     //@JsonManagedReference
-    @JsonIgnore
+    @JsonIgnore // / @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
     /*
