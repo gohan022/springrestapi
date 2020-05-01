@@ -1,7 +1,7 @@
 package com.gohan.springrestapi.product;
 
 import com.gohan.springrestapi.entities.Product;
-import com.gohan.springrestapi.exceptions.MapValidationErrorService;
+import com.gohan.springrestapi.service.MapValidationErrorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;

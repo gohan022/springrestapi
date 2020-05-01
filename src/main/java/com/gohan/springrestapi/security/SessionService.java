@@ -17,16 +17,10 @@ public class SessionService {
         this.sessionRepository = sessionRepository;
     }
 
-    public boolean isValid(HttpServletRequest request, String prevAccessToken, String newAccessToken, User user) {
+    public boolean isValid(HttpServletRequest request, String prevAccessToken, User user) {
         final String ipAddress = request.getRemoteAddr();
         Session session = this.sessionRepository.findByIpAddressAndPayloadAndUser(ipAddress, prevAccessToken, user).orElse(null);
-        if(session != null) {
-            session.setPayload(newAccessToken);
-            this.sessionRepository.save(session);
-            return true;
-        }
-
-        return false;
+        return session != null;
     }
 
     public void updatePayload(HttpServletRequest request, String newAccessToken, User user) {

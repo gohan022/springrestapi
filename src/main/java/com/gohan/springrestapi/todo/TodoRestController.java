@@ -1,7 +1,7 @@
 package com.gohan.springrestapi.todo;
 
 import com.gohan.springrestapi.entities.Todo;
-import com.gohan.springrestapi.exceptions.MapValidationErrorService;
+import com.gohan.springrestapi.service.MapValidationErrorService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +30,10 @@ public class TodoRestController {
 
     @GetMapping("/user/todos")
     public Page<Todo> index(@RequestParam(required = false, defaultValue = "0") int page,
-                            @RequestParam(required = false, defaultValue = "15") int size) {
+                            @RequestParam(required = false, defaultValue = "15") int size,
+                            @RequestParam(required = false) String sortDir,
+                            @RequestParam(required = false) String sort) {
+        // PageRequest.of(page, size, Sort.Direction.fromString(sortDir), sort)
         return todoService.findAll(PageRequest.of(page, size));
     }
 

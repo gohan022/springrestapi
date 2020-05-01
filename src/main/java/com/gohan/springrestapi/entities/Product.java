@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "products")
 public class Product extends Auditable {
@@ -19,26 +19,12 @@ public class Product extends Auditable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
-
-    @NonNull
     private String sku;
-
-    @NonNull
     private String name;
-
-    @NonNull
     private String description;
-
-    @NonNull
     private BigDecimal unitPrice;
-
-    @NonNull
     private String imageUrl;
-
-    @NonNull
     private int unitsInStock;
-
-    @NonNull
     private boolean active;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)

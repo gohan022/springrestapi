@@ -13,6 +13,6 @@ import java.util.Date;
 public class ErrorResponse {
     private Date timestamp;
     private Boolean error;
-    private HttpStatus status;
+    private int status;
     private String message;
 }

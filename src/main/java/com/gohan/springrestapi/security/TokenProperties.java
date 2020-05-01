@@ -21,7 +21,6 @@ public class TokenProperties {
     @NotBlank
     private String destroyUri;
     private final Jwt jwt = new Jwt();
-    private final Cookie cookie = new Cookie();
 
     @Getter
     @Setter
@@ -29,19 +28,12 @@ public class TokenProperties {
         @NotBlank
         private String tokenSecret;
         @NotBlank
+        private String headerString;
+        @NotBlank
+        private String tokenPrefix;
+        @NotBlank
         private Long tokenExpirationInMs;
         @NotBlank
         private Long refreshTokenExpirationInMs;
-    }
-
-    @Getter
-    @Setter
-    public static class Cookie {
-        @NotBlank
-        private String accessTokenCookieName;
-        @NotBlank
-        private String refreshTokenCookieName;
-        private boolean secure;
-        private String domain;
     }
 }

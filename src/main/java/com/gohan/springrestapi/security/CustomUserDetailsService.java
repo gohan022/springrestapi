@@ -1,7 +1,6 @@
 package com.gohan.springrestapi.security;
 
 import com.gohan.springrestapi.entities.User;
-import com.gohan.springrestapi.security.dto.TokenUserDetails;
 import com.gohan.springrestapi.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,6 +1,8 @@
 package com.gohan.springrestapi.user;
 
+import com.gohan.springrestapi.entities.Role;
 import com.gohan.springrestapi.entities.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,9 +11,11 @@ import java.util.List;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
@@ -29,12 +33,17 @@ public class UserService {
         return userRepository.findByUsername(username).orElse(null);
     }
 
-    @Transactional
+    public void register(User user) {
+        user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER);
+        user.setEnabled(true);
+        this.save(user);
+    }
+
     public User save(User todo) {
         return userRepository.save(todo);
     }
 
-    @Transactional
     public void delete(Long id) {
         userRepository.deleteById(id);
     }

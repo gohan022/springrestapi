@@ -2,6 +2,8 @@ package com.gohan.springrestapi.user;
 
 import com.gohan.springrestapi.entities.Role;
 import com.gohan.springrestapi.entities.User;
+import com.gohan.springrestapi.service.MapValidationErrorService;
+import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +20,15 @@ import java.util.stream.Collectors;
 @RestController
 public class UserRestController {
     private final UserService userService;
+    private final UserRegisterValidator userRegisterValidator;
+    private final MapValidationErrorService errorService;
+    private final ModelMapper modelMapper;
 
-    public UserRestController(UserService userService) {
+    public UserRestController(UserService userService, UserRegisterValidator userRegisterValidator, MapValidationErrorService errorService, ModelMapper modelMapper) {
         this.userService = userService;
+        this.userRegisterValidator = userRegisterValidator;
+        this.errorService = errorService;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/admin/users")
@@ -41,7 +49,7 @@ public class UserRestController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        if(user == null) {
+        if (user == null) {
             response.put("message", "The User ID: ".concat(Long.toString(id).concat(" does not exist in the database!")));
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
@@ -54,10 +62,10 @@ public class UserRestController {
         Map<String, Object> response = new HashMap<>();
         User newUser;
 
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()
                     .stream()
-                    .map(err -> "Field "+ err.getDefaultMessage())
+                    .map(err -> "Field " + err.getDefaultMessage())
                     .collect(Collectors.toList());
 
             response.put("errors", errors);
@@ -92,16 +100,16 @@ public class UserRestController {
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        if(prevUser == null) {
+        if (prevUser == null) {
             response.put("message", "Error: could not edit, user ID: "
                     .concat(Long.toString(id).concat(" does not exist in the database!")));
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
         }
 
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getAllErrors()
                     .stream()
-                    .map(err -> "Field "+ err.getDefaultMessage())
+                    .map(err -> "Field " + err.getDefaultMessage())
                     .collect(Collectors.toList());
 
             response.put("errors", errors);
@@ -131,7 +139,7 @@ public class UserRestController {
 
         try {
             User user = userService.findById(id);
-            if(user == null) {
+            if (user == null) {
                 response.put("message", "Error: could not delete, user ID: "
                         .concat(Long.toString(id).concat(" does not exist in the database!")));
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
@@ -150,24 +158,16 @@ public class UserRestController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult bindingResult) {
+    public ResponseEntity<?> register(@RequestBody UserRegDTO userDTO, BindingResult bindingResult) {
         Map<String, Object> response = new HashMap<>();
-        User newUser;
 
-        if(bindingResult.hasErrors()) {
-            List<String> errors = bindingResult.getAllErrors()
-                    .stream()
-                    .map(err -> "Field "+ err.getDefaultMessage())
-                    .collect(Collectors.toList());
-
-            response.put("errors", errors);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+        this.userRegisterValidator.validate(userDTO, bindingResult);
+        ResponseEntity<?> errorsList = this.errorService.MapValidationService(bindingResult);
+        if (errorsList != null) return errorsList;
 
         try {
-            user.setRole(Role.USER);
-            user.setEnabled(true);
-            newUser = userService.save(user);
+            User user = modelMapper.map(userDTO, User.class);
+            userService.register(user);
         } catch (DataAccessException e) {
             response.put("message", "Failed to insert into database!");
             response.put("error", Objects.requireNonNull(e.getMessage()).concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -175,7 +175,6 @@ public class UserRestController {
         }
 
         response.put("message", "Registration successfully!");
-        response.put("user", newUser);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

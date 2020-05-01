@@ -14,8 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -30,22 +28,19 @@ import static org.springframework.http.HttpMethod.*;
 )
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private static final String[] CSRF_IGNORE = {"/auth/**"};
-    private static final String[] AUTH_IGNORE = {"/register", "/auth/**", "/error", "/actuator/**"};
+    private static final String[] AUTH_IGNORE = {"/register/**", "/auth/**", "/error", "/actuator/**"};
     private static final String[] ROLE_USER_MATCHER = {"/user/**"};
     private static final String[] ROLE_ADMIN_MATCHER = {"/admin/**"};
 
     private final CustomUserDetailsService userDetailsService;
     private final TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint;
     private final JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter;
-    private final CustomCsrfFilter customCsrfFilter;
 
     public SecurityConfiguration(CustomUserDetailsService userDetailsService, TokenAuthenticationEntryPoint tokenAuthenticationEntryPoint,
-                                 JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter, CustomCsrfFilter customCsrfFilter) {
+                                 JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter) {
         this.userDetailsService = userDetailsService;
         this.tokenAuthenticationEntryPoint = tokenAuthenticationEntryPoint;
         this.jwtTokenAuthenticationFilter = jwtTokenAuthenticationFilter;
-        this.customCsrfFilter = customCsrfFilter;
     }
 
     @Override
@@ -54,11 +49,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and().exceptionHandling().authenticationEntryPoint(tokenAuthenticationEntryPoint)
                 .and().formLogin().disable().httpBasic().disable();
 
-        http.csrf()
-                .ignoringAntMatchers(CSRF_IGNORE)
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .and()
-                .addFilterAfter(customCsrfFilter, CsrfFilter.class);
+        http.csrf().disable();
 
         http.authorizeRequests()
                 .antMatchers(AUTH_IGNORE).permitAll()
